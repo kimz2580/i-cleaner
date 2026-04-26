@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "836866272458",
+    "project_id": "i-cleaner",
+    "storage_bucket": "i-cleaner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836866272458:android:025d673bfd3917badb1833",
+        "android_client_info": {
+          "package_name": "com.hamza.icleaner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "836866272458-bf9jmb53cp5ui4q5b4fot24tjlnohma3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzPt6LDpHw1c7NWZPtfWOkOj6GEHGlSH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "836866272458-bf9jmb53cp5ui4q5b4fot24tjlnohma3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
