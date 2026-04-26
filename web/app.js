@@ -8,7 +8,7 @@ const firebaseConfig = {
   projectId: "i-cleaner",
   storageBucket: "i-cleaner.firebasestorage.app",
   messagingSenderId: "836866272458",
-  appId: "1:836866272458:android:025d673bfd3917badb1833"
+  appId: "1:836866272458:web:a51811cf53c52abadb1833"
 };
 
 const app = initializeApp(firebaseConfig);
