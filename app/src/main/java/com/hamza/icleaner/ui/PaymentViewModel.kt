@@ -30,6 +30,7 @@ class PaymentViewModel : ViewModel() {
                 db.collection("orders").document(orderId)
                     .update(
                         mapOf(
+                            "paymentStatus" to "Paid",
                             "payment_status" to "Paid",
                             "payment_method" to method,
                             "updated_at" to System.currentTimeMillis().toString()

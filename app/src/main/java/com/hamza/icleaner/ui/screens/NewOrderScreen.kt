@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.hamza.icleaner.data.repository.SessionManager
 import com.hamza.icleaner.ui.NewOrderState
 import com.hamza.icleaner.ui.NewOrderViewModel
 import java.util.Locale
@@ -32,9 +33,16 @@ data class GarmentType(val name: String, val icon: String, val basePrice: Int)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewOrderScreen(navController: NavController, viewModel: NewOrderViewModel = viewModel()) {
-    var customerName by remember { mutableStateOf("") }
-    var customerPhone by remember { mutableStateOf("") }
+fun NewOrderScreen(
+    navController: NavController, 
+    viewModel: NewOrderViewModel = viewModel(),
+    sessionManager: SessionManager? = null
+) {
+    val userName by sessionManager?.userName?.collectAsState(initial = "") ?: remember { mutableStateOf("") }
+    val userPhone by sessionManager?.userPhone?.collectAsState(initial = "") ?: remember { mutableStateOf("") }
+
+    var customerName by remember(userName) { mutableStateOf(userName ?: "") }
+    var customerPhone by remember(userPhone) { mutableStateOf(userPhone ?: "") }
     var pickupAddress by remember { mutableStateOf("") }
     var deliveryAddress by remember { mutableStateOf("") }
     var serviceType by remember { mutableStateOf("Wash & Fold") }
@@ -232,9 +240,9 @@ fun GarmentItemRow(garment: GarmentType, quantity: Int, onQuantityChange: (Int) 
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { if (quantity > 0) onQuantityChange(quantity - 1) },
-                modifier = Modifier.size(32.dp).background(Color.White, CircleShape)
+                modifier = Modifier.size(32.dp).background(Color(0xFF1E3C72), CircleShape)
             ) {
-                Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
             }
             Text(
                 text = quantity.toString(),
@@ -243,9 +251,9 @@ fun GarmentItemRow(garment: GarmentType, quantity: Int, onQuantityChange: (Int) 
             )
             IconButton(
                 onClick = { onQuantityChange(quantity + 1) },
-                modifier = Modifier.size(32.dp).background(Color.White, CircleShape)
+                modifier = Modifier.size(32.dp).background(Color(0xFF1E3C72), CircleShape)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
             }
         }
     }
@@ -289,23 +297,23 @@ fun PriceBreakdown(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Subtotal", color = Color.White.copy(alpha = 0.8f), modifier = Modifier.weight(1f))
-                Text("TZS ${subtotal.toLocaleString()}", color = Color.White)
+                Text("Subtotal", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), modifier = Modifier.weight(1f))
+                Text("TSH ${subtotal.toLocaleString()}", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
             if (expressFee > 0) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Express Fee (+50%)", color = Color.White.copy(alpha = 0.8f), modifier = Modifier.weight(1f))
-                    Text("TZS ${expressFee.toLocaleString()}", color = Color.White)
+                    Text("Express Fee (+50%)", color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), modifier = Modifier.weight(1f))
+                    Text("TSH ${expressFee.toLocaleString()}", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
-            HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Total", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
-                Text("TZS ${total.toLocaleString()}", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                Text("Total", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                Text("TSH ${total.toLocaleString()}", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
             }
         }
     }

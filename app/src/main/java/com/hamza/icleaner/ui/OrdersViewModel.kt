@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+import com.google.firebase.auth.FirebaseAuth
+
 sealed class OrdersState {
     object Loading : OrdersState()
     data class Success(val orders: List<Order>) : OrdersState()
@@ -21,6 +23,7 @@ sealed class OrdersState {
 class OrdersViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<OrdersState>(OrdersState.Loading)
     val uiState: StateFlow<OrdersState> = _uiState.asStateFlow()
     private var ordersListener: ListenerRegistration? = null
@@ -29,36 +32,30 @@ class OrdersViewModel : ViewModel() {
         ordersListener?.remove()
         _uiState.value = OrdersState.Loading
         
-        val collection = db.collection("orders")
-        
-        // Use a simpler query first to avoid immediate Index errors
-        val query = if (status == "all") {
-            collection // Removed orderBy for now to prevent crash
-        } else {
-            collection.whereEqualTo("status", status)
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            _uiState.value = OrdersState.Error("Please log in to see your orders")
+            return
         }
+        
+        // STRICT PRIVACY: Only fetch orders where userId matches the logged-in user
+        val query = db.collection("orders").whereEqualTo("userId", currentUser.uid)
 
         ordersListener = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                // If index is missing, we still want to show SOMETHING
-                _uiState.value = OrdersState.Error("Database indexing... please wait. ${error.message}")
-                
-                // Fallback: just get the collection without sorting
-                db.collection("orders").limit(50).addSnapshotListener { fallbackSnapshot, _ ->
-                    val orders = fallbackSnapshot?.documents?.mapNotNull { doc ->
-                        doc.toObject(Order::class.java)?.apply { if (orderId.isEmpty()) orderId = doc.id }
-                    } ?: emptyList()
-                    _uiState.value = OrdersState.Success(orders)
-                }
+                _uiState.value = OrdersState.Error("Accessing your orders... ${error.message}")
                 return@addSnapshotListener
             }
 
-            val orders = snapshot?.documents?.mapNotNull { doc ->
-                doc.toObject(Order::class.java)?.apply { if (orderId.isEmpty()) orderId = doc.id }
+            val myOrders = snapshot?.documents?.mapNotNull { doc ->
+                val order = doc.toObject(Order::class.java)
+                order?.apply { 
+                    if (orderId.isEmpty()) orderId = doc.id 
+                }
             } ?: emptyList()
             
-            // Sort in memory for now to avoid requiring a Firestore Index
-            val sortedOrders = orders.sortedByDescending { it.createdAt }
+            // Sort by creation date string (newest first)
+            val sortedOrders = myOrders.sortedByDescending { it.createdAt.toString() }
             _uiState.value = OrdersState.Success(sortedOrders)
         }
     }

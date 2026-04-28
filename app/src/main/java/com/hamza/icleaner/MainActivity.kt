@@ -85,7 +85,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("new_order") {
-                        NewOrderScreen(navController = navController)
+                        NewOrderScreen(
+                            navController = navController,
+                            sessionManager = sessionManager
+                        )
                     }
                     composable("orders") {
                         OrdersScreen(

@@ -50,7 +50,7 @@ fun DashboardScreen(
             CenterAlignedTopAppBar(
                 title = { 
                     Text(
-                        "i-Laundry", 
+                        "i-Cleaner", 
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                         color = MaterialTheme.colorScheme.primary
                     ) 
@@ -137,7 +137,7 @@ fun DashboardScreen(
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Welcome back!",
+                                text = "Welcome to i-Cleaner!",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -164,16 +164,16 @@ fun DashboardScreen(
                                     icon = Icons.Default.AddCircle,
                                     onClick = onNewOrderClick,
                                     modifier = Modifier.weight(1f),
-                                    containerColor = Color(0xFFE0E7FF),
-                                    contentColor = Color(0xFF4361EE)
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 QuickActionCard(
                                     title = "All Orders",
                                     icon = Icons.AutoMirrored.Filled.List,
                                     onClick = { navController.navigate("orders") },
                                     modifier = Modifier.weight(1f),
-                                    containerColor = Color(0xFFDCFCE7),
-                                    contentColor = Color(0xFF10B981)
+                                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
+                                    contentColor = MaterialTheme.colorScheme.secondary
                                 )
                             }
                             
@@ -188,16 +188,16 @@ fun DashboardScreen(
                                         icon = Icons.Default.People,
                                         onClick = { navController.navigate("customers") },
                                         modifier = Modifier.weight(1f),
-                                        containerColor = Color(0xFFFEF3C7),
-                                        contentColor = Color(0xFFD97706)
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     QuickActionCard(
                                         title = "Staff",
                                         icon = Icons.Default.Badge,
                                         onClick = { navController.navigate("employees") },
                                         modifier = Modifier.weight(1f),
-                                        containerColor = Color(0xFFCFFAFE),
-                                        contentColor = Color(0xFF0891B2)
+                                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        contentColor = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -218,7 +218,8 @@ fun DashboardScreen(
                                     title = "Today's Orders",
                                     value = state.stats.todayOrders.toString(),
                                     icon = Icons.Default.ShoppingCart,
-                                    color = Color(0xFF4361EE),
+                                    color = Color(0xFF4CAF50), // Vibrant Green
+                                    containerColor = Color(0xFFE8F5E9), // Light Green background
                                     modifier = Modifier.weight(1f),
                                     onClick = { 
                                         if (state.todaysOrdersList.isNotEmpty()) {
@@ -228,9 +229,10 @@ fun DashboardScreen(
                                 )
                                 StatCard(
                                     title = "Total Bill",
-                                    value = "KSH ${"%,.2f".format(state.stats.totalBill)}",
+                                    value = "TSH ${"%,.2f".format(state.stats.totalBill)}",
                                     icon = Icons.Default.Payments,
-                                    color = Color(0xFF10B981),
+                                    color = Color(0xFF2196F3), // Bright Blue
+                                    containerColor = Color(0xFFE3F2FD), // Light Blue background
                                     modifier = Modifier.weight(1f),
                                     onClick = { 
                                         if (state.todaysOrdersList.isNotEmpty()) {
@@ -399,23 +401,32 @@ fun StatCard(
     value: String,
     icon: ImageVector,
     color: Color,
+    containerColor: Color = Color.White,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier,
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(icon, contentDescription = null, tint = color)
-            Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(text = title, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = color.copy(alpha = 0.1f),
+                modifier = Modifier.size(32.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+                }
+            }
+            Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = color)
+            Text(text = title, style = MaterialTheme.typography.labelMedium, color = color.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
         }
     }
 }

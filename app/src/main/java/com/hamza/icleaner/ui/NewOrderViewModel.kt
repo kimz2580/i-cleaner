@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hamza.icleaner.data.api.RetrofitClient
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ sealed class NewOrderState {
 class NewOrderViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<NewOrderState>(NewOrderState.Idle)
     val uiState: StateFlow<NewOrderState> = _uiState.asStateFlow()
 
@@ -39,30 +41,32 @@ class NewOrderViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = NewOrderState.Loading
             try {
+                val currentUser = auth.currentUser
                 val orderId = db.collection("orders").document().id
                 // Use customer name and a shorter suffix for the order number
                 val namePart = customerName.filter { it.isLetter() }.take(4).uppercase()
                 val orderNumber = "$namePart-${System.currentTimeMillis().toString().takeLast(4)}"
                 
                 val orderData = mapOf(
-                    "order_id" to orderId,
-                    "order_number" to orderNumber,
-                    "customer_name" to customerName,
-                    "customer_phone" to customerPhone,
-                    "service_type" to serviceType,
-                    "garment_count" to garmentCount,
+                    "userId" to (currentUser?.uid ?: ""),
+                    "orderId" to orderId,
+                    "orderNumber" to orderNumber,
+                    "customerName" to customerName,
+                    "customerPhone" to customerPhone,
+                    "serviceType" to serviceType,
+                    "garmentCount" to garmentCount,
                     "garments" to garments,
                     "subtotal" to subtotal.toDouble(),
-                    "total_amount" to totalAmount.toDouble(),
-                    "final_amount" to totalAmount.toDouble(),
-                    "payment_method" to paymentMethod,
-                    "pickup_address" to pickupAddress,
-                    "delivery_address" to deliveryAddress,
-                    "special_instructions" to specialInstructions,
+                    "totalAmount" to totalAmount.toDouble(),
+                    "finalAmount" to totalAmount.toDouble(),
+                    "paymentMethod" to paymentMethod,
+                    "pickupAddress" to pickupAddress,
+                    "deliveryAddress" to deliveryAddress,
+                    "specialInstructions" to specialInstructions,
                     "status" to "Pending",
-                    "payment_status" to "Pending",
-                    "created_at" to System.currentTimeMillis().toString(),
-                    "updated_at" to System.currentTimeMillis().toString()
+                    "paymentStatus" to "Unpaid",
+                    "createdAt" to com.google.firebase.Timestamp.now(),
+                    "updatedAt" to com.google.firebase.Timestamp.now()
                 )
                 
                 // 1. Save to Firestore for real-time UI updates

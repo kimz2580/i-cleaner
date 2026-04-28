@@ -18,9 +18,20 @@ const db = getFirestore(app);
 // If already logged in, redirect to dashboard automatically
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        console.log("User logged in:", user.email);
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && (userDoc.data().role === "admin" || userDoc.data().role === "employee")) {
-            window.location.href = "dashboard.html";
+        if (userDoc.exists()) {
+            const role = userDoc.data().role?.toLowerCase();
+            console.log("Detected role:", role);
+            if (role === "admin") {
+                window.location.href = "dashboard.html";
+            } else if (role === "employee" || role === "staff") {
+                window.location.href = "employee.html";
+            } else {
+                console.warn("Unauthorized role:", role);
+            }
+        } else {
+            console.error("No Firestore document for UID:", user.uid);
         }
     }
 });
@@ -44,18 +55,28 @@ if (loginForm) {
 
             const userDoc = await getDoc(doc(db, "users", user.uid));
 
-            if (userDoc.exists() && (userDoc.data().role === "admin" || userDoc.data().role === "employee")) {
-                window.location.href = "dashboard.html";
+            if (userDoc.exists()) {
+                const role = userDoc.data().role?.toLowerCase();
+                if (role === "admin") {
+                    window.location.href = "dashboard.html";
+                } else if (role === "employee" || role === "staff") {
+                    window.location.href = "employee.html";
+                } else {
+                    errorMessage.textContent = "Access Denied: Only Admin/Staff can use this portal.";
+                    await signOut(auth);
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = "Authenticate Access";
+                }
             } else {
-                errorMessage.textContent = "Access Denied: Only Admin/Staff can use this portal.";
+                errorMessage.textContent = "User profile not found.";
                 await signOut(auth);
                 loginBtn.disabled = false;
-                loginBtn.textContent = "Login to Dashboard";
+                loginBtn.textContent = "Authenticate Access";
             }
         } catch (error) {
-            errorMessage.textContent = "Error: " + error.message;
+            errorMessage.textContent = "Invalid credentials. Please try again.";
             loginBtn.disabled = false;
-            loginBtn.textContent = "Login to Dashboard";
+            loginBtn.textContent = "Authenticate Access";
         }
     });
 }

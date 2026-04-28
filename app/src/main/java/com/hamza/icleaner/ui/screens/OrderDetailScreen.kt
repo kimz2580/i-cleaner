@@ -136,7 +136,7 @@ fun OrderDetailScreen(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Subtotal")
-                        Text("KSH ${"%,.2f".format(order.subtotal)}")
+                        Text("TSH ${"%,.2f".format(order.subtotal)}")
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Payment Method")
@@ -144,7 +144,7 @@ fun OrderDetailScreen(
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Payment Status")
-                        Text(order.paymentStatus, color = if (order.paymentStatus == "Paid") Color(0xFF10B981) else Color(0xFFF59E0B), fontWeight = FontWeight.Bold)
+                        Text(order.paymentStatus, color = if (order.paymentStatus == "Paid") MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline, fontWeight = FontWeight.Bold)
                     }
                     if (order.paymentStatus != "Paid" && currentStatus != "Cancelled") {
                         Row(
@@ -178,7 +178,7 @@ fun OrderDetailScreen(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Total Amount", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("KSH ${"%,.2f".format(order.finalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("TSH ${"%,.2f".format(order.finalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

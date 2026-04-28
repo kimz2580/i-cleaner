@@ -8,45 +8,45 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = LaundryBlue,
+    primary = DeepNavy,
     onPrimary = White,
-    primaryContainer = LaundryLightBlue,
-    onPrimaryContainer = LaundryBlue,
+    primaryContainer = RoyalBlue,
+    onPrimaryContainer = White,
     
-    secondary = LaundryGreen,
+    secondary = SuccessGreen,
     onSecondary = White,
     
-    background = SurfaceGray,
-    onBackground = LaundryDark,
+    background = BackgroundLight,
+    onBackground = TextDark,
     
     surface = White,
-    onSurface = LaundryDark,
+    onSurface = TextDark,
     
-    error = LaundryRed,
+    error = DangerRed,
     onError = White,
     
-    outline = LaundryGrey
+    outline = TextMuted
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = LaundryLightBlue,
-    onPrimary = LaundryBlue,
-    primaryContainer = LaundryBlue,
-    onPrimaryContainer = LaundryLightBlue,
+    primary = RoyalBlue,
+    onPrimary = White,
+    primaryContainer = DeepNavy,
+    onPrimaryContainer = White,
     
-    secondary = LaundryGreen,
+    secondary = SuccessGreen,
     onSecondary = White,
     
-    background = LaundryDark,
-    onBackground = White,
+    background = TextDark,
+    onBackground = BackgroundLight,
     
-    surface = Color(0xFF1C1B1F),
+    surface = Color(0xFF1E293B),
     onSurface = White,
     
-    error = LaundryRed,
+    error = DangerRed,
     onError = White,
     
-    outline = LaundryGrey
+    outline = TextMuted
 )
 
 @Composable

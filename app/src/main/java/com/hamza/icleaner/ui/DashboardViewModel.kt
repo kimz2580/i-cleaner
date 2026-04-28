@@ -2,6 +2,7 @@ package com.hamza.icleaner.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -31,6 +32,7 @@ sealed class DashboardState {
 class DashboardViewModel : ViewModel() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow<DashboardState>(DashboardState.Loading)
     val uiState: StateFlow<DashboardState> = _uiState.asStateFlow()
 
@@ -39,9 +41,19 @@ class DashboardViewModel : ViewModel() {
         dashboardListener?.remove()
         
         _uiState.value = DashboardState.Loading
+
+        val currentUser = auth.currentUser
+        val collection = db.collection("orders")
+        
+        // Filter by user ID if the user is a customer or generic 'user'
+        val query = if ((role == "customer" || role == "user") && currentUser != null) {
+            collection.whereEqualTo("userId", currentUser.uid)
+        } else {
+            collection
+        }
         
         // Use a SnapshotListener for real-time updates!
-        dashboardListener = db.collection("orders").addSnapshotListener { snapshot, error ->
+        dashboardListener = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 _uiState.value = DashboardState.Error("Dashboard Error: ${error.localizedMessage}")
                 return@addSnapshotListener
@@ -86,13 +98,14 @@ class DashboardViewModel : ViewModel() {
                     val todayStr = sdf.format(Date())
                     
                     val todaysOrders = allOrders.filter { order ->
-                        if (order.createdAt.isEmpty()) return@filter false
+                        val createdAtStr = order.createdAt?.toString() ?: ""
+                        if (createdAtStr.isEmpty()) return@filter false
                         try {
-                            val timestamp = order.createdAt.toLongOrNull()
+                            val timestamp = createdAtStr.toLongOrNull()
                             if (timestamp != null) {
                                 sdf.format(Date(timestamp)) == todayStr
                             } else {
-                                order.createdAt.startsWith(todayStr)
+                                createdAtStr.startsWith(todayStr)
                             }
                         } catch (e: Exception) { false }
                     }
@@ -101,13 +114,13 @@ class DashboardViewModel : ViewModel() {
                     val activeOrders = allOrders.filter { 
                         it.status.lowercase() in listOf("pending", "processing", "ready") && 
                         it.paymentStatus.lowercase() != "paid"
-                    }.sortedByDescending { it.createdAt }
+                    }.sortedByDescending { it.createdAt?.toString() ?: "" }
 
                     // 2. Past Orders: Those that are Paid OR Completed OR Cancelled
                     val pastOrders = allOrders.filter {
                         it.paymentStatus.lowercase() == "paid" || 
                         it.status.lowercase() in listOf("completed", "cancelled", "delivered")
-                    }.sortedByDescending { it.createdAt }
+                    }.sortedByDescending { it.createdAt?.toString() ?: "" }
                     
                     // Total Bill: The full amount of all orders created TODAY
                     val totalBill = todaysOrders.sumOf { it.finalAmount }

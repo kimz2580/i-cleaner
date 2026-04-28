@@ -55,17 +55,17 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "🧺",
+                text = "✨",
                 fontSize = 64.sp
             )
             Text(
-                text = "i-Laundry",
+                text = "i-Cleaner",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Smart Laundry Management",
+                text = "Premium Laundry & Dry Cleaning",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline
             )

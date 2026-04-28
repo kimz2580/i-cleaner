@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>i-Laundry | Admin Dashboard</title>
+    <title>i-Cleaner | Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <nav>
         <div class="nav-content">
-            <h2>🧺 i-Laundry Admin</h2>
+            <h2>✨ i-Cleaner Admin</h2>
             <div class="user-info">
+                <button id="themeToggle" class="theme-toggle" title="Toggle Dark/Light Mode">🌓</button>
                 <span id="admin-name">Loading...</span>
                 <button id="logoutBtn">Logout</button>
             </div>
@@ -19,7 +24,14 @@
 
     <main class="dashboard-content">
         <header>
-            <h1>Order Management</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h1>Business Intelligence</h1>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="addMachineBtn" class="login-btn" style="width: auto; padding: 0.8rem 1.5rem; margin: 0; background: var(--primary-color);">⚙️ Add Machine</button>
+                    <button id="downloadReportBtn" class="login-btn" style="width: auto; padding: 0.8rem 1.5rem; margin: 0; background: var(--accent-color);">📄 Export Report</button>
+                    <button id="addOrderBtn" class="login-btn" style="width: auto; padding: 0.8rem 1.5rem; margin: 0;">+ New Manual Order</button>
+                </div>
+            </div>
             <div class="stats">
                 <div class="stat-card">
                     <h3>Total Orders</h3>
@@ -31,12 +43,50 @@
                 </div>
                 <div class="stat-card">
                     <h3>Today's Revenue</h3>
-                    <p id="today-revenue">KSH 0.00</p>
+                    <p id="today-revenue">TSH 0.00</p>
                 </div>
             </div>
+
+            <section class="analytics-section" style="margin-bottom: 3rem;">
+                <h2>Business Insights</h2>
+                <div class="insights-grid">
+                    <div class="stat-card chart-container">
+                        <h4>Revenue Trend (7 Days)</h4>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="stat-card chart-container">
+                        <h4>Garment Distribution</h4>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </section>
         </header>
 
+        <div class="live-grid">
+            <section class="machine-monitoring">
+                <h2>Machine Monitoring</h2>
+                <div class="machine-grid">
+                    <!-- Machines injected by JS -->
+                </div>
+            </section>
+
+            <section class="activity-section">
+                <h2>Recent Activity</h2>
+                <div class="activity-feed" id="activity-log">
+                    <!-- Activity items -->
+                </div>
+            </section>
+
+            <section class="top-customers-section">
+                <h2>Loyal Customers</h2>
+                <div class="activity-feed" id="top-customers-list">
+                    <!-- Top customers will be injected here -->
+                </div>
+            </section>
+        </div>
+
         <section class="orders-section">
+            <h2>Live Orders</h2>
             <div class="table-container">
                 <table>
                     <thead>
@@ -55,7 +105,100 @@
                 </table>
             </div>
         </section>
+
+        <section class="users-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Staff & User Management</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Promote users to 'Employee' to give them access to the Staff Portal.</p>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Phone</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
+
+    <!-- Modal for Manual Order (Synced from Employee) -->
+    <div id="orderModal" class="modal" style="display: none;">
+        <div class="modal-content stat-card">
+            <h2>Add New Manual Order</h2>
+            <form id="manualOrderForm">
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="custName" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number (for WhatsApp)</label>
+                    <input type="text" id="custPhone" placeholder="07xxxxxxxx" required>
+                </div>
+                <div class="form-group">
+                    <label>Service Type</label>
+                    <select id="serviceType" class="action-select" style="width: 100%; padding: 0.8rem;">
+                        <option value="Wash & Fold">Wash & Fold</option>
+                        <option value="Dry Cleaning">Dry Cleaning</option>
+                        <option value="Ironing">Ironing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Garment Count</label>
+                    <input type="number" id="gCount" required>
+                </div>
+                <div class="form-group">
+                    <label>Total Price (TSH)</label>
+                    <input type="number" id="tPrice" required>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="login-btn">Create Order</button>
+                    <button type="button" onclick="document.getElementById('orderModal').style.display='none'" class="login-btn btn-danger">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for QR Code -->
+    <div id="qrModal" class="modal" style="display: none;">
+        <div class="modal-content stat-card" style="text-align: center;">
+            <h2>Order QR Code</h2>
+            <p id="qrOrderInfo" style="margin-bottom: 1rem; color: var(--text-muted);"></p>
+            <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 1rem;"></div>
+            <button type="button" onclick="document.getElementById('qrModal').style.display='none'" class="login-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Machine -->
+    <div id="machineModal" class="modal" style="display: none;">
+        <div class="modal-content stat-card">
+            <h2>Register New Hardware</h2>
+            <form id="addMachineForm">
+                <div class="form-group">
+                    <label>Machine Name/ID</label>
+                    <input type="text" id="mName" placeholder="e.g. Washer 04" required>
+                </div>
+                <div class="form-group">
+                    <label>Machine Type</label>
+                    <select id="mType" class="action-select" style="width: 100%; padding: 0.8rem;">
+                        <option value="washer">Washing Machine 🧺</option>
+                        <option value="dryer">Industrial Dryer 💨</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="login-btn">Add to Inventory</button>
+                    <button type="button" onclick="document.getElementById('machineModal').style.display='none'" class="login-btn btn-danger">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script type="module" src="dashboard.js"></script>
 </body>

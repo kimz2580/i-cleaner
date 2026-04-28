@@ -31,10 +31,10 @@ fun SignUpScreen(
     onBackToLogin: () -> Unit
 ) {
     var fullName by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf("user") }
     var passwordVisible by remember { mutableStateOf(false) }
     
     val authState by viewModel.authState.collectAsState()
@@ -72,7 +72,7 @@ fun SignUpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Join i-Laundry",
+                    text = "Join i-Cleaner",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -91,6 +91,18 @@ fun SignUpScreen(
                     onValueChange = { fullName = it },
                     label = { Text("Full Name") },
                     modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Phone Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
                     textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface)
                 )
@@ -138,42 +150,16 @@ fun SignUpScreen(
                     textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Select Account Type",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    ElevatedFilterChip(
-                        selected = selectedRole == "user",
-                        onClick = { selectedRole = "user" },
-                        label = { Text("User / Customer", modifier = Modifier.padding(vertical = 8.dp)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ElevatedFilterChip(
-                        selected = selectedRole == "admin",
-                        onClick = { selectedRole = "admin" },
-                        label = { Text("Administrator", modifier = Modifier.padding(vertical = 8.dp)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = { 
                         if (password == confirmPassword) {
-                            viewModel.register(email, password, fullName, selectedRole)
+                            viewModel.register(email, password, fullName, phone, "user")
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = authState !is AuthState.Loading && fullName.isNotEmpty() && email.isNotEmpty() && password.length >= 6,
+                    enabled = authState !is AuthState.Loading && fullName.isNotEmpty() && phone.isNotEmpty() && email.isNotEmpty() && password.length >= 6,
                     shape = MaterialTheme.shapes.medium
                 ) {
                     if (authState is AuthState.Loading) {

@@ -18,67 +18,78 @@ import com.hamza.icleaner.data.model.Order
 fun OrderCard(order: Order, onClick: () -> Unit = {}) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(18.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = order.orderNumber,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        text = order.orderNumber.ifEmpty { "#" + order.orderId.takeLast(6).uppercase() },
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 14.sp
                     )
-                    Text(text = order.customerName, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = order.customerName, 
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     StatusBadge(order.status)
                     Text(
-                        text = "KSH ${order.finalAmount.toInt()}",
-                        fontWeight = FontWeight.Bold,
+                        text = "TSH ${String.format("%,d", order.finalAmount.toInt())}",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 16.sp,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
             
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp, color = Color.LightGray)
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 14.dp), 
+                thickness = 0.8.dp, 
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Service", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                    Text(order.serviceType, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Items", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                    Text(order.garmentCount.toString(), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Payment", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-                    Text(order.paymentMethod, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                }
+                InfoColumn("Service", order.serviceType, Alignment.Start)
+                InfoColumn("Items", order.garmentCount.toString(), Alignment.CenterHorizontally)
+                InfoColumn("Payment", order.paymentMethod, Alignment.End)
             }
 
             if (order.pickupAddress.isNotEmpty() || order.deliveryAddress.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null, 
-                        modifier = Modifier.size(14.dp), 
-                        tint = Color.Gray
-                    )
-                    Text(
-                        text = order.pickupAddress.ifEmpty { order.deliveryAddress },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(start = 4.dp),
-                        maxLines = 1
-                    )
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null, 
+                            modifier = Modifier.size(14.dp), 
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = order.pickupAddress.ifEmpty { order.deliveryAddress },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 4.dp),
+                            maxLines = 1,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
@@ -86,25 +97,35 @@ fun OrderCard(order: Order, onClick: () -> Unit = {}) {
 }
 
 @Composable
+fun InfoColumn(label: String, value: String, alignment: Alignment.Horizontal) {
+    Column(horizontalAlignment = alignment) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
 fun StatusBadge(status: String) {
-    val color = when (status) {
-        "Pending" -> Color(0xFFF59E0B)
-        "Processing" -> Color(0xFF06B6D4)
-        "Ready" -> Color(0xFF10B981)
-        "Completed" -> Color(0xFF4361EE)
-        else -> Color.Gray
+    val (color, label) = when (status.lowercase()) {
+        "pending" -> MaterialTheme.colorScheme.outline to "PENDING"
+        "processing" -> MaterialTheme.colorScheme.primary to "PROCESSING"
+        "ready", "completed" -> MaterialTheme.colorScheme.secondary to "READY"
+        "delivered" -> Color(0xFF27AE60) to "DELIVERED"
+        else -> MaterialTheme.colorScheme.outline to status.uppercase()
     }
 
     Surface(
-        color = color.copy(alpha = 0.1f),
-        shape = RoundedCornerShape(16.dp)
+        color = color.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
         Text(
-            text = status,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            text = label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
             color = color,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 11.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 0.5.sp
         )
     }
 }

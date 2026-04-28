@@ -57,12 +57,14 @@ class MainViewModel(private val sessionManager: SessionManager) : ViewModel() {
 
                         val fullName = doc.getString("full_name") ?: "User"
                         val emailStored = doc.getString("email") ?: email
+                        val phone = doc.getString("phone") ?: ""
                         
                         sessionManager.saveSession(
                             user.uid,
                             role,
                             fullName,
-                            emailStored
+                            emailStored,
+                            phone
                         )
                         _authState.value = AuthState.Success(role)
                     } else {
@@ -78,7 +80,7 @@ class MainViewModel(private val sessionManager: SessionManager) : ViewModel() {
         }
     }
 
-    fun register(email: String, password: String, fullName: String, role: String) {
+    fun register(email: String, password: String, fullName: String, phone: String, role: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
@@ -93,13 +95,14 @@ class MainViewModel(private val sessionManager: SessionManager) : ViewModel() {
                         "uid" to user.uid,
                         "email" to finalEmail,
                         "full_name" to fullName,
+                        "phone" to phone,
                         "role" to role.lowercase(),
                         "created_at" to com.google.firebase.Timestamp.now()
                     )
                     
                     db.collection("users").document(user.uid).set(userData).await()
                     
-                    sessionManager.saveSession(user.uid, role.lowercase(), fullName, finalEmail)
+                    sessionManager.saveSession(user.uid, role.lowercase(), fullName, finalEmail, phone)
                     _authState.value = AuthState.Success(role.lowercase())
                 }
             } catch (e: Exception) {
